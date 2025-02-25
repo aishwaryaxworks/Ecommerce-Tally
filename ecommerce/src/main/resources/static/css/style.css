@@ -1,0 +1,105 @@
+@media (max-width: 768px) {
+    .grid {
+        display: block;
+    }
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.row.flex-grow-1 {
+    flex-grow: 1;
+}
+
+.form-control {
+    height: 30px;
+    font-size: 0.875rem;
+}
+
+#inputBox {
+             width: 250px;
+             height: 38px;
+         }
+         .suggestions {
+            border: 1px solid #ccc;
+            max-height: 250px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            z-index: 1000;
+            width: 17rem;
+            top: 100%;
+            margin-top: 0.5rem;
+        }
+        .suggestion-item {
+            padding: 10px 12px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+        .suggestion-item strong {
+            font-weight: bold;
+            color: #333; /* Optional: Adjust color for better visibility */
+        }
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+
+/* Ensure the container stretches to full height */
+.container-fluid {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Allow the row to grow and push pagination down */
+.row.flex-grow-1 {
+    flex-grow: 1;
+}
+
+/* Ensure main content has a flex layout */
+.col-md-9.ms-sm-auto.col-lg-10 {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* Push pagination to the bottom of the content */
+.mt-auto {
+    margin-top: auto;
+    padding-bottom: 1rem;
+}
+.row .col-md-4 {
+    padding: 0 15px; /* Add spacing between columns */
+}
+
+.form-control,
+.form-select {
+    height: 38px;
+    font-size: 0.9em;
+    margin-bottom: 10px; /* Add space below fields */
+}
+
+select.form-select option[disabled] {
+    color: grey; /* Unselected dropdown color */
+}
+
+button {
+    font-size: 14px;
+    margin: 5px;
+}
+
+.row.mt-3.text-center {
+    margin-top: 20px; /* Spacing above buttons */
+}

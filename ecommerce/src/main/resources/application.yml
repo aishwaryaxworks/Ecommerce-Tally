@@ -1,0 +1,49 @@
+server:
+  servlet:
+    context-path: /netzwerk
+  port: 8090
+spring:
+  profiles:
+    active: dev
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    cache: false
+    check-template-location: true
+
+tallyapplication:
+  url: http://localhost:8081/tally/api
+
+logging:
+  file:
+    name: ../opt/netzwerk/Ecommerce-Dev-Logs/Ecommerce.log
+    max-size: 10MB
+    total-size-cap: 10MB
+    max-history: '1'
+    clean-history-on-start: 'true'
+  level:
+    root: INFO
+    com:
+      netzwerk:
+        ecommerce: INFO
+    org:
+      hibernate:
+        SQL: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    rolling-file-name: Ecommerce-%d{yyyy-MM-dd}.%i.log
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: info

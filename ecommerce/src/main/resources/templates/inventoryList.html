@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Inventory List</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .suggestions {
+            border: 1px solid #ccc;
+            max-height: 250px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            z-index: 1000;
+            width: 17rem;
+            top: 100%;
+            margin-top: 0.5rem;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .suggestion-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="~{fragments/navbar.html :: barNav}"></div>
+<div class="d-flex">
+<!-- Main Content Wrapper -->
+<div class="container-fluid">
+    <div class="row">
+        <!--Sidebar-->
+        <div th:replace="~{fragments/sidebar.html :: barSide}"></div>
+
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 " style="min-height: 80vh">
+            <h3 class="text-center">INVENTORY LIST</h3>
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center position-relative">
+                    <input type="text" id="makeSearchInput" class="form-control me-2"
+                           placeholder="Search by Make" oninput="showInventorySuggestions(this.value)"
+                           autocomplete="off" />
+                    <div id="inventorySuggestions" class="suggestions"></div>
+                    <button class="btn btn-primary me-3" onclick="searchInventoryByMake()">Search</button>
+                    <button class="btn btn-secondary" onclick="clearInventorySearch()">Clear</button>
+                </div>
+
+                <a class="btn btn-primary" th:href="@{/inventory}">
+                    Add Product
+                </a>
+            </div>
+
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Group Name</th>
+                    <th>Sub Group</th>
+                    <th>Make</th>
+                    <th>Model</th>
+                    <th>Item Name</th>
+                    <th>Product Code</th>
+                    <th>HSN Code</th>
+                    <th>Opening Balance(Stock-in-hand)</th>
+<!--                    <th>GUID</th>-->
+
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${inventoryPage.content}">
+                    <td th:text="${item.groupName}"></td>
+                    <td th:text="${item.subGroupName}"></td>
+                    <td th:text="${item.make}"></td>
+                    <td th:text="${item.model}"></td>
+                    <td th:text="${item.itemName}"></td>
+                    <td th:text="${item.productCode}"></td>
+                    <td th:text="${item.hsnCode}"></td>
+                    <td th:text="${item.openingBalance}"></td>
+<!--                    <td th:text="${item.guidOfInventory}"></td>-->
+                    <td>
+                        <a th:href="@{'/inventory/edit/' + ${item.id}}" class="btn btn-warning btn-sm">Edit</a>
+                        <a th:href="@{'/inventory/delete/' + ${item.id}}" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+                <tr th:if="${inventoryPage.content.empty}">
+                    <td colspan="10" class="text-center">No Inventory Data Found</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+         <div class="d-flex justify-content-end">
+                    <div class="align-items-center mb-3">
+                        <form th:action="@{/inventory/display}" method="get" class="d-flex align-items-center">
+                            <label for="size" class="form-label me-2">Rows per page:</label>
+                            <select name="size" id="size" class="form-select form-select-sm w-auto me-2"
+                                    onchange="this.form.submit()">
+                                <option th:value="25" th:text="'25'" th:selected="${pageSize == 25}"></option>
+                                <option th:value="50" th:text="'50'" th:selected="${pageSize == 50}"></option>
+                                <option th:value="75" th:text="'75'" th:selected="${pageSize == 75}"></option>
+                                <option th:value="100" th:text="'100'" th:selected="${pageSize == 100}"></option>
+                            </select>
+                            <input type="hidden" name="page" th:value="${currentPage}" />
+                        </form>
+                    </div>
+                    <div class="text-center">
+                        <span class="me-2"> Total :</span>
+                        <span class="me-2" th:text="${totalItems}"></span>
+                    </div>
+                    <div aria-label="Page navigation">
+                        <ul class="pagination justify-content-end">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a th:href="@{'/inventory/display?page=' + (${currentPage - 1}) + '&size=' + ${pageSize}}"
+                                   class="page-link">
+                                    <i class="fa-solid fa-angle-left"></i>
+                                </a>
+                            </li>
+                            <li th:each="i : ${#numbers.sequence(currentPage - 2 < 0 ? 0 : currentPage - 2,
+                            currentPage + 2 >= totalPages ? totalPages - 1 : currentPage + 2)}"
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a th:href="@{'/inventory/display?page=' + ${i} + '&size=' + ${pageSize}}"
+                                   th:text="${i + 1}" class="page-link"></a>
+                            </li>
+                            <li th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+                                <a th:href="@{'/inventory/display?page=' + (${currentPage + 1}) + '&size=' + ${pageSize}}"
+                                   class="page-link">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footerBar}"></div>
+<script type="text/javascript" th:src="@{/js/script.js}"></script>
+<script type="text/javascript" th:src="@{/js/search.js}"></script>
+<script type="text/javascript" th:src="@{/js/urlConstant.js}"></script>
+
+<script
+        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"
+></script>
+<script>
+    // Function to get URL parameters
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Show toast message based on action and status
+    function showActionToast(action, status) {
+        let message = '';
+        let icon = 'success';  // Default icon
+
+        if (status === 'success') {
+            if (action === 'save') {
+                message = 'Inventory item saved successfully';
+            } else if (action === 'update') {
+                message = 'Inventory item updated successfully';
+            } else if (action === 'delete') {
+                message = 'Inventory item deleted successfully';
+            }
+        } else if (status === 'failure') {
+            message = `Failed to ${action} inventory item`;
+            icon = 'error';
+        }
+
+        if (message) {
+            Swal.fire({
+                toast: true,
+                icon: icon,
+                title: message,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
+    }
+
+    // Get action and status from URL parameters and show the toast
+    var action = getUrlParameter('action');
+    var status = getUrlParameter('status');
+    if (action && status) {
+        showActionToast(action, status);
+    }
+
+    if (action && status) {
+        if (action === 'delete' && status === 'success') {
+            showToastMessage('delete');
+        } else if (action === 'delete' && status === 'failure') {
+            Swal.fire('Error', 'Failed to delete inventory item.', 'error');
+        } else {
+            showActionToast(action, status);
+        }
+    }
+</script>
+
+</body>
+</html>

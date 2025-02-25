@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Inventory</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript" th:src="@{/js/script.js}"></script>
+    <script type="text/javascript" th:src="@{/js/inventory.js}"></script>
+    <script type="text/javascript" th:src="@{/js/urlConstant.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+            integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+            crossorigin="anonymous"></script>
+
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+            display: block;
+        }
+
+        .require {
+            color: red;
+        }
+
+        input::placeholder {
+            font-size: 0.9em;
+        }
+
+        select.form-select {
+            height: 38px;
+            font-size: 0.9em;
+        }
+
+        button {
+            font-size: 14px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .submit-buttons {
+            margin-bottom: 50px;
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar.html :: barNav}"></div>
+<!-- Main Content Wrapper -->
+<div class="container-fluid d-flex flex-grow-1">
+    <div class="row w-100">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar.html :: barSide}"></div>
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <h2 class="text-center">INVENTORY</h2>
+            <div class="d-flex justify-content-end">
+                <a th:href="@{/inventory/display}" class="nav-link text-dark">
+                    <button class="btn btn-primary">View Inventory</button>
+                </a>
+                    <button class="btn btn-primary ms-2" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                        Create Product Group
+                    </button>
+            </div>
+            <form th:action="@{/inventory/send-to-tally}" th:object="${inventory}" method="post"
+                  onsubmit="return validateInventoryForm();" novalidate>
+                <input type="hidden" th:field="*{id}">
+
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="groupName" class="form-label">Product Group Name <span class="require">*</span></label>
+                            <select class="form-select" id="groupName" th:field="*{groupName}" required>
+                                <option value="" disabled selected>Select a Product Group</option>
+                                <option th:each="groupName : ${stockGroups}" th:value="${groupName}" th:text="${groupName}"></option>
+                            </select>
+                            <div class="error" th:if="${#fields.hasErrors('groupName')}" th:errors="*{groupName}"></div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="subGroupName" class="form-label">Product Sub Group Name</label>
+                            <input type="text" class="form-control" id="subGroupName" name="subGroupName"
+                                   th:field="*{subGroupName}" placeholder="Enter Sub Group">
+                            <div class="error" th:if="${#fields.hasErrors('subGroupName')}"
+                                 th:errors="*{subGroupName}"></div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="make" class="form-label">Make <span class="require">*</span></label>
+                            <input type="text" class="form-control" id="make" th:field="*{make}"
+                                   placeholder="Enter Make">
+                            <div class="error" th:if="${#fields.hasErrors('make')}" th:errors="*{make}"></div>
+                            <span class="error" id="makeError"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="model" class="form-label">Model <span class="require">*</span></label>
+                            <input type="text" class="form-control" id="model" th:field="*{model}"
+                                   placeholder="Enter Model">
+                            <div class="error" th:if="${#fields.hasErrors('model')}" th:errors="*{model}"></div>
+                            <span class="error" id="modelError"></span>
+                        </div>
+                    </div>
+                    <!-- Center Column -->
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="productCode" class="form-label">Product Code <span
+                                    class="require">*</span></label>
+                            <input type="text" class="form-control" id="productCode" th:field="*{productCode}"
+                                   placeholder="Enter Product Code">
+                            <div class="error" th:if="${#fields.hasErrors('productCode')}"
+                                 th:errors="*{productCode}"></div>
+                            <span class="error" id="productCodeError"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="itemName" class="form-label">Item Name <span
+                                    class="require">*</span></label>
+                            <input type="text" class="form-control" id="itemName" th:field="*{itemName}"
+                                   placeholder="Enter Item Name">
+                            <div class="error" th:if="${#fields.hasErrors('itemName')}" th:errors="*{itemName}">
+                            </div>
+                            <span class="error" id="itemNameError"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="hsnCode" class="form-label">HSN Code <span class="require">*</span></label>
+                            <input type="text" class="form-control" id="hsnCode" th:field="*{hsnCode}"
+                                   placeholder="Enter HSN Code">
+                            <div class="error" th:if="${#fields.hasErrors('hsnCode')}" th:errors="*{hsnCode}"></div>
+                            <span class="error" id="hsnCodeError"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="baseUnit" class="form-label">Quantity(Units of Measure)<span
+                                    class="require">*</span></label>
+                            <select class="form-select" id="baseUnit" name="baseUnit" th:field="*{baseUnit}">
+                                <option value="" disabled selected style="color: grey;">Select Base Unit</option>
+                                <option value="Nos">Nos</option>
+                                <option value="Doz">Doz</option>
+                                <option value="Kgs">Kgs</option>
+                            </select>
+                            <div class="error" th:if="${#fields.hasErrors('baseUnit')}" th:errors="*{baseUnit}">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right Column -->
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="openingBalance" class="form-label">Opening Balance(Stock-in-hand)</label>
+                            <input type="number" class="form-control" id="openingBalance"
+                                   th:field="*{openingBalance}" placeholder="Enter Opening Balance">
+                            <div class="error" th:if="${#fields.hasErrors('openingBalance')}"
+                                 th:errors="*{openingBalance}"></div>
+                            <span class="error" id="openingBalanceError"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="openingValue" class="form-label">Opening Value(Initial Price)</label>
+                            <input type="number" class="form-control" id="openingValue" th:field="*{openingValue}"
+                                   placeholder="Enter Opening Value">
+                            <div class="error" th:if="${#fields.hasErrors('openingValue')}"
+                                 th:errors="*{openingValue}"></div>
+                            <span class="error" id="openingValueError"></span>
+                        </div>
+                        <div class="mb-2">
+                            <label for="igstRate" class="form-label">GST Rate <span class="require">*</span></label>
+                            <input type="number" class="form-control" id="igstRate" th:field="*{igstRate}" placeholder="Enter GST Rate" step="1" min="0">
+                            <div class="error" th:if="${#fields.hasErrors('igstRate')}" th:errors="*{igstRate}"></div>
+                            <span class="error" id="igstRateError"></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Hidden Fields -->
+                <input type="hidden" th:field="*{srcOfHsnDetails}" value="Specify Details Here">
+                <input type="hidden" th:field="*{srcOfGstDetails}" value="Specify Details Here">
+                <input type="hidden" th:field="*{taxability}" value="Taxable">
+                <input type="hidden" th:field="*{gstCalcSlabOnMrp}" value="No">
+                <input type="hidden" th:field="*{isReverseChargeApplicable}" value="No">
+                <input type="hidden" th:field="*{isNonGstGoods}" value="No">
+                <input type="hidden" th:field="*{cessRate}" value="0">
+                <input type="hidden" th:field="*{stateCessRate}" value="0">
+                <input type="hidden" th:field="*{rate}" value="1">
+                <input type="hidden" th:field="*{createdBy}">
+                <input type="hidden" th:field="*{updatedBy}">
+                <input type="hidden" id="cgstRate" th:field="*{cgstRate}">
+                <input type="hidden" id="sgstRate" th:field="*{sgstRate}">
+                <input type="hidden" id="applicableFromHsn" th:field="*{applicableFromHsn}" value="${#dates.format(#dates.createNow(), 'yyyyMMdd')}">
+                <input type="hidden" id="applicableFromGst" th:field="*{applicableFromGst}" value="${#dates.format(#dates.createNow(), 'yyyyMMdd')}">
+                <div class="row submit-buttons mt-3">
+                    <div class="col text-center">
+                        <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                        <button type="button" onclick="clearErrors()" class="btn btn-secondary btn-sm">Clear</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--Modal-->
+<div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createGroupModalLabel">Create Product Group</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createGroupForm">
+                    <div class="mb-3">
+                        <label for="stockGroupName" class="form-label">Product Group Name <span class="require">*</span></label>
+                        <input type="text" class="form-control" id="stockGroupName" placeholder="Enter Product Stock Group Name">
+                        <div class="error" id="groupNameError" style="display: none;">Group Name is required</div>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" id="checkGroupNameButton" class="btn btn-primary" onclick="submitStockGroupForm()">Save</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footerBar}"></div>
+<script type="text/javascript" th:src="@{/js/script.js}"></script>
+<script type="text/javascript" th:src="@{/js/inventory.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+</body>
+</html>

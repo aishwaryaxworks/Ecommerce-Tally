@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<div th:replace="~{fragments/navbar.html :: barNav}"></div>
+<!-- Main Content Wrapper -->
+<div class="container-fluid d-flex flex-column" style="min-height: 100vh;">
+    <div class="row flex-grow-1">
+        <div th:replace="~{fragments/sidebar.html :: barSide}"></div>
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 d-flex flex-column">
+            <h3 class="text-center mb-4">Order Details</h3>
+            <!-- Order Details Form -->
+            <form>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="orderId" class="form-label">Order ID</label>
+                        <input type="text" id="orderId" class="form-control" th:value="${orderDto.id}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="voucherType" class="form-label">Voucher Type</label>
+                        <input type="text" id="voucherType" class="form-control" th:value="${orderDto.voucherTypeName}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="customerName" class="form-label">Customer Name</label>
+                        <input type="text" id="customerName" class="form-control" th:value="${orderDto.customerName}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="customerPayableAmount" class="form-label">Customer Payable Amount</label>
+                        <input type="text" id="customerPayableAmount" class="form-control" th:value="${orderDto.customerPayableAmount}" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="purchaseOrderNumber" class="form-label">Purchase Order Number</label>
+                        <input type="text" id="purchaseOrderNumber" class="form-control" th:value="${orderDto.purchaseOrderNumber}"readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="groupName" class="form-label">Product Group Name</label>
+                        <input type="text" id="groupName" class="form-control" th:value="${orderDto.groupName}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="model" class="form-label">Model</label>
+                        <input type="text" id="model" class="form-control" th:value="${orderDto.model}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="make" class="form-label">Make</label>
+                        <input type="text" id="make" class="form-control" th:value="${orderDto.make}" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="productCode" class="form-label">Product Code</label>
+                        <input type="text" id="productCode" class="form-control" th:value="${orderDto.productCode}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="itemName" class="form-label">Item Name</label>
+                        <input type="text" id="itemName" class="form-control" th:value="${orderDto.itemName}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="openingValue" class="form-label">Opening Value(Initial Price)</label>
+                        <input type="text" id="openingValue" class="form-control" th:value="${orderDto.openingValue}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sellingPrice" class="form-label">Selling Price</label>
+                        <input type="text" id="sellingPrice" class="form-control" th:value="${orderDto.sellingPrice}" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="openingBalance" class="form-label">Opening Balance(Stock-in-Hand)</label>
+                        <input type="text" id="openingBalance" class="form-control" th:value="${orderDto.openingBalance}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="text" id="quantity" class="form-control" th:value="${orderDto.quantity}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="totalPrice" class="form-label">Total Price</label>
+                        <input type="text" id="totalPrice" class="form-control" th:value="${orderDto.totalPrice}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="orderDueDate" class="form-label">Order Due Date</label>
+                        <input type="text" id="orderDueDate" class="form-control" th:value="${orderDto.orderDueDate}" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="narration" class="form-label">Narration</label>
+                        <input type="text" id="narration" class="form-control" th:value="${orderDto.narration}" readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="orderStatus" class="form-label">Order Status</label>
+                        <input type="text" id="orderStatus" class="form-control"
+                               th:value="${orderDto.orderStatus ? 'Approved' : 'Pending'}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="invoiceStatus" class="form-label">Invoice Status</label>
+                        <input type="text" id="invoiceStatus" class="form-control" th:value="${orderDto.isInvoice}" readonly />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="createdBy" class="form-label">Created By</label>
+                        <input type="text" id="createdBy" class="form-control" th:value="${orderDto.createdBy}" readonly />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="createdOn" class="form-label">Created On</label>
+                        <input type="text" id="createdOn" class="form-control" th:value="${orderDto.createdOn}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="updatedBy" class="form-label">Updated By</label>
+                        <input type="text" id="updatedBy" class="form-control" th:value="${orderDto.updatedBy}" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="updatedOn" class="form-label">Updated On</label>
+                        <input type="text" id="updatedOn" class="form-control" th:value="${orderDto.updatedOn}" readonly />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/footer :: footerBar}"></div>
+</body>
+</html>

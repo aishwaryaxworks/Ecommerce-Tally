@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Customer</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+            integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+    <style>
+        .error,.errors {
+            color: red;
+            font-size: 0.875em;
+            display: block;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar.html :: barNav}"></div>
+<div class="d-flex">
+    <div th:replace="~{fragments/sidebar.html :: barSide}"></div>
+
+    <div class="container" style="min-height: 80vh">
+        <h3 class="text-center">CUSTOMER DETAILS</h3>
+        <div class="d-flex justify-content-end">
+            <a class="btn btn-primary" th:href="@{/customer/toView}">Back</a>
+        </div>
+        <div class="d-flex justify-content-center align-items-center">
+            <div class="w-75">
+                <form
+                        id="customerForm"
+                        th:action="@{/customer/saveCustomer}"
+                        th:object="${customer}"
+                        onsubmit="return validateForm()"
+                        method="post"
+                        class="row g-3"
+                >
+                    <!-- First row with 3 fields -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="customerName" class="form-label">Customer Name <span class="errors" style="display: inline;">*</span></label>
+                                <input type="text" class="form-control" onchange="checkCustomerName()" id="customerName" th:field="*{customerName}" />
+                                <span id="customerNameError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="customerType" class="form-label">Customer Type <span class="errors" style="display: inline;">*</span></label>
+                                <select class="form-select" id="customerType" th:field="*{customerType}" onchange="validateCustomerType()">
+                                    <option value="">Select customer type</option>
+                                    <option value="Sundry Debtors">Sundry Debtors</option>
+                                    <option value="Sundry Creditors">Sundry Creditors</option>
+                                </select>
+                                <span id="customerTypeError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="customerEmailId" class="form-label">Email <span class="errors" style="display: inline;">*</span></label>
+                                <input type="email" class="form-control" onchange="validateCustomerEmail()" id="customerEmailId" onblur="customerEmailIdCheck()" th:field="*{customerEmailId}" />
+                                <span id="customerEmailError" class="error"></span>
+                                <span id="customerEmailErrordb" class="error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second row with 3 fields -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="contactNumber" class="form-label">Contact Number <span class="errors" style="display: inline;">*</span></label>
+                                <input type="text" class="form-control" id="contactNumber" oninput="this.value = this.value.replace(/[^0-9]/g, ''); validateContactNumber();" onblur="contactNumberCheck()" th:field="*{contactNumber}" />
+                                <span id="contactNumberError" class="error"></span>
+                                <span id="contactNumberErrordb" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="gstNumber" class="form-label">GST Number</label>
+                                <input type="text" class="form-control" id="gstNumber" onchange="gstNumberCheck()" th:field="*{gstNumber}" />
+                                <span id="gstNumberError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="customerCredit" class="form-label">Credit Limit</label>
+                                <input type="number" class="form-control" id="customerCredit" th:field="*{customerCredit}" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Third row with 3 fields -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="customerPayableAmount" class="form-label">Payable Amount</label>
+                                <input type="number" class="form-control" id="customerPayableAmount" th:field="*{customerPayableAmount}" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="country" class="form-label">Country <span class="errors" style="display: inline;">*</span></label>
+                                <select class="form-select" id="country" onblur="loadStates()" onchange="validateCountry()" th:field="*{country}">
+                                    <option value="India" selected>India</option>
+                                </select>
+                                <span id="countryError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="state" class="form-label">State <span class="errors" style="display: inline;">*</span></label>
+                                <select class="form-select" id="state" onchange="loadCities()" onblur="validateState()" th:field="*{state}">
+                                    <option value="">Select State</option>
+                                </select>
+                                <span id="stateError" class="error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fourth row with 3 fields -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="city" class="form-label">City <span class="errors" style="display: inline;">*</span></label>
+                                <select class="form-select" id="city" onchange="validateCity()" th:field="*{city}">
+                                    <option value="">Select City</option>
+                                </select>
+                                <span id="cityError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="pinCode" class="form-label">Pin code <span class="errors" style="display: inline;">*</span></label>
+                                <input type="number" class="form-control" id="pinCode" onchange="validatePinCode()" th:field="*{pinCode}" />
+                                <span id="pinCodeError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="address1" class="form-label">Address 1 <span class="errors" style="display: inline;">*</span></label>
+                                <input type="text" class="form-control" id="address1" onchange="validateAddress1()" th:field="*{address1}" />
+                                <span id="address1Error" class="error"></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="address2" class="form-label">Address 2</label>
+                                <input type="text" class="form-control" id="address2" th:field="*{address2}" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="address3" class="form-label">Address 3</label>
+                                <input type="text" class="form-control" id="address3" th:field="*{address3}" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="billingAddress" class="form-label">Billing Address <span class="errors" style="display: inline;">*</span></label>
+                                <textarea class="form-control" id="billingAddress" name="billingAddress" rows="8" onchange="validateBillingAddress()" th:field="*{billingAddress}"></textarea>
+                                <span id="billingAddressError" class="error"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label>Do you want your Shipping Address<br>to be the same as Billing Address?</label><br>
+                                <input type="radio" name="address" id="AddressYes" value="Yes" onclick="copyBillingAddress()" />
+                                <label for="AddressYes">Yes</label>
+                                <input type="radio" name="address" id="AddressNo" value="No" onclick="clearShippingAddress()" />
+                                <label for="AddressNo">No</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="shippingAddress" class="form-label">Shipping Address <span class="errors" style="display: inline;">*</span></label>
+                                <textarea class="form-control" id="shippingAddress" name="shippingAddress" rows="8" onchange="validateShippingAddress()" th:field="*{shippingAddress}"></textarea>
+                                <span id="shippingAddressError" class="error"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Payment Mode <span class="errors" style="display: inline;">*</span></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" id="onlinePayment" name="paymentMode" onchange="validatePaymentModeOnline()" value="ONLINE" th:field="*{paymentMode}" />
+                                    <label class="form-check-label" for="onlinePayment">Online</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" id="chequePayment" name="paymentMode" onchange="validatePaymentModeOnline()" value="CHEQUE" th:field="*{paymentMode}" />
+                                    <label class="form-check-label" for="chequePayment">Cheque</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" id="cashPayment" name="paymentMode" onchange="validatePaymentModeOnline()" value="CASH" th:field="*{paymentMode}" />
+                                    <label class="form-check-label" for="cashPayment">Cash</label>
+                                </div>
+                                <span id="paymentModeError" class="error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+<!--                    &lt;!&ndash; Payment Mode and Submit buttons &ndash;&gt;-->
+<!--                    <div class="row">-->
+<!--                        -->
+<!--                    </div>-->
+
+                    <div class="col-12 d-flex justify-content-center grid gap-3">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                </form>
+                <br>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footerBar}"></div>
+<script type="text/javascript" th:src="@{/js/script.js}"></script>
+<script type="text/javascript" th:src="@{/js/customer.js}"></script>
+<script type="text/javascript" th:src="@{/js/urlConstant.js}"></script>
+
+<script
+        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"
+></script>
+
+</body>
+</html>

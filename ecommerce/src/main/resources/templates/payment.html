@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment</title>
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"/>
+  <link th:href="@{/css/style.css}" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<div th:replace="~{fragments/navbar.html :: barNav}"></div>
+
+<div class="d-flex">
+  <div class="container-fluid">
+    <div class="row">
+      <div th:replace="~{fragments/sidebar :: barSide}"></div>
+
+      <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="min-height: 80vh;">
+        <h3 class="text-center">Order Payment</h3>
+
+        <!-- Payment Form -->
+        <form th:action="@{/payment/processPayment}" method="post" class="mx-auto mt-4" style="max-width: 900px;">
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label for="orderId" class="form-label">Order ID</label>
+              <input type="text" class="form-control" name="orderId" id="orderId" th:value="${order.id}" readonly/>
+            </div>
+            <div class="col-md-4">
+              <label for="totalAmount" class="form-label">Total Amount</label>
+              <input type="text" class="form-control"  name="totalAmount" id="totalAmount" th:value="${order.totalPrice}" readonly/>
+            </div>
+            <div class="col-md-4">
+              <label for="paymentMethod" class="form-label">Payment Mode</label>
+              <select class="form-control" id="paymentMethod" name="paymentMode" required>
+                <option value="credit_card">Credit Card</option>
+                <option value="debit_card">Debit Card</option>
+                <option value="net_banking">Net Banking</option>
+                <option value="upi">UPI</option>
+                <option value="cash">Cash</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <label for="amountPaid" class="form-label">Amount Paid</label>
+              <input type="number" class="form-control" id="amountPaid" name="paidAmount" required/>
+            </div>
+
+            <div class="col-md-4">
+              <label for="remainingBalance" class="form-label">Remaining Balance</label>
+              <input type="text" class="form-control" name ="remainingBalance" id="remainingBalance" readonly/>
+            </div>
+
+            <div class="col-md-4">
+              <label for="nextPayDate" class="form-label">Next Payment Date</label>
+              <input type="date" class="form-control" id="nextPayDate" name="nextPaymentDate"/>
+            </div>
+          </div>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary" id="payNowBtn" disabled>Pay Now</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footerBar}"></div>
+
+<script type="text/javascript" th:src="@{/js/script.js}"></script>
+
+<script>
+  document.getElementById("paymentMethod").addEventListener("change", function () {
+    let paymentMethod = this.value;
+    let cardDetails = document.getElementById("cardDetails");
+
+    if (paymentMethod === "cash") {
+      cardDetails.style.display = "none";
+    } else {
+      cardDetails.style.display = "block";
+    }
+  });
+
+  document.getElementById("amountPaid").addEventListener("input", function () {
+    let totalAmount = parseFloat(document.getElementById("totalAmount").value);
+    let amountPaid = parseFloat(this.value) || 0;
+    let remainingBalance = totalAmount - amountPaid;
+
+    // Enable the Pay Now button if amount is entered and is less than or equal to totalAmount
+    if (amountPaid > totalAmount) {
+      document.getElementById("payNowBtn").disabled = true;
+      document.getElementById("remainingBalance").value = "Amount exceeds total price!";
+      document.getElementById("remainingBalance").style.color = "red";
+    } else {
+      document.getElementById("payNowBtn").disabled = (amountPaid <= 0 || amountPaid > totalAmount);
+      if (remainingBalance === 0) {
+        document.getElementById("remainingBalance").value = "0.00";
+        document.getElementById("remainingBalance").style.color = "green";
+      } else if (remainingBalance > 0) {
+        document.getElementById("remainingBalance").value = remainingBalance.toFixed(2);
+        document.getElementById("remainingBalance").style.color = "red";
+      } else {
+        document.getElementById("remainingBalance").value = "0.00";
+      }
+
+      // If remaining balance is greater than 0, make nextPayDate required
+      let nextPayDateField = document.getElementById("nextPayDate");
+      if (remainingBalance > 0) {
+        nextPayDateField.setAttribute("required", "true");
+        nextPayDateField.setAttribute("min", new Date().toISOString().split("T")[0]); // set today's date as minimum
+      } else {
+        nextPayDateField.removeAttribute("required");
+        nextPayDateField.removeAttribute("min");
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

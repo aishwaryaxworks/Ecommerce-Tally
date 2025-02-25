@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="barNav">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #79c2ea;">
+        <div class="container d-flex justify-content-between">
+            <a class="navbar-brand" href="#">
+                <img
+                        th:src="@{/images/netzwerk.png}"
+                        style="height: 50px; width: 150px; margin-left: 15px"
+                        alt="Netzwerk-logo"
+                />
+            </a>
+            <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-toggle="collapse"
+                    data-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="ml-auto d-none d-lg-block">
+                <div class="user-info d-flex flex-column text-white text-end">
+                    <span><strong>Name:</strong> <span th:text="${session.username != null ? session.username : 'Guest'}"></span></span>
+                    <span><strong>Role:</strong> <span th:text="${session.role != null ? session.role : 'NA'}"></span></span>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+</div>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Customer List</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/script.js}"></script>
+    <script type="text/javascript" th:src="@{/js/search.js}"></script>
+    <script type="text/javascript" th:src="@{/js/urlConstant.js}"></script>
+    <style>
+        #customerInput {
+            width: 200px;
+        }
+
+        .suggestions {
+            border: 1px solid #ccc;
+            max-height: 250px;
+            overflow-y: auto;
+            position: absolute;
+            background-color: white;
+            z-index: 1000;
+            width: 17rem;
+            top: 100%;
+            margin-top: 0.5rem;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+
+</head>
+
+<body>
+<!-- Header -->
+<div th:replace="~{fragments/navbar.html :: barNav}"></div>
+<div class="d-flex">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{fragments/sidebar.html :: barSide}"></div>
+
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="min-height: 80vh">
+                <h3 class="text-center">CUSTOMER LIST</h3>
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center position-relative">
+                        <input type="text" id="customerInput" class="form-control me-2"
+                               placeholder="Search by Customer Name" oninput="showSuggestions(this.value)"
+                               autocomplete="off" />
+                        <button class="btn btn-primary me-3" onclick="searchCustomers()">Search</button>
+                        <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+                        <div id="suggestions" class="suggestions"></div>
+                    </div>
+                    <a class="btn btn-primary"  th:href="@{/customer/getCustomerDetails}">
+                        Add Customer
+                    </a>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+<!--                         <th>ID</th>-->
+<!--                <th>GUID</th>-->
+                        <th>Customer Type</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Contact Number</th>
+                        <th>GST Number</th>
+                        <th>City</th>
+                        <th>Pin Code</th>
+                        <th>Address</th>
+                        <th>Billing Address</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="customerTableBody">
+                    <tr th:each="customer : ${customerList}">
+<!--                         <td th:text="${customer.customerId}"></td>-->
+<!--                         <td th:text="${customer.guid}"></td>-->
+                        <td th:text="${customer.customerType}"></td>
+                        <td th:text="${customer.customerName}"></td>
+                        <td th:text="${(customer.customerEmailId != null && customer.customerEmailId != '') ? customer.customerEmailId : 'NA'}"></td>
+                        <td th:text="${(customer.contactNumber != 0 && customer.contactNumber != '') ? customer.contactNumber :'NA' }"></td>
+                        <td th:text="${(customer.gstNumber !=null && customer.gstNumber != '') ? customer.gstNumber : 'NA'}"></td>
+                        <td th:text="${customer.city}"></td>
+                        <td th:text="${(customer.pinCode != 0 && customer.pinCode != '') ? customer.pinCode : 'NA'}"></td>
+                        <td th:text="${(customer.address1 != null && customer.address1 != '') ? customer.address1 : 'NA'}"></td>
+                        <td th:text="${(customer.billingAddress !=null && customer.billingAddress !='')? customer.billingAddress : 'NA' }"></td>
+                        <td>
+                            <a th:href="@{'/customer/edit?id=' + ${customer.customerId}}"
+                               class="btn btn-warning btn-sm">Edit</a>
+                            <a th:href="@{'/customer/delete?id=' + ${customer.customerId}}"
+                               class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${customerList.empty}">
+                        <td colspan="10" class="text-center">No Customer Data Found</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <div class="align-items-center mb-3">
+                    <form th:action="@{/customer/display}" method="get" class="d-flex align-items-center">
+                        <label for="size" class="form-label me-2">Rows per page:</label>
+                        <select name="size" id="size" class="form-select form-select-sm w-auto me-2"
+                                onchange="this.form.submit()">
+                            <option th:value="25" th:text="'25'" th:selected="${pageSize == 25}"></option>
+                            <option th:value="50" th:text="'50'" th:selected="${pageSize == 50}"></option>
+                            <option th:value="75" th:text="'75'" th:selected="${pageSize == 75}"></option>
+                            <option th:value="100" th:text="'100'" th:selected="${pageSize == 100}"></option>
+                        </select>
+                        <input type="hidden" name="page" th:value="${currentPage}" />
+                    </form>
+                </div>
+                <div class="text-center">
+                    <span class="me-2"> Total :</span>
+                    <span class="me-2" th:text="${totalItems}"></span>
+                </div>
+                <div aria-label="Page navigation">
+                    <ul class="pagination justify-content-end">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a th:href="@{'/customer/display?page=' + (${currentPage - 1}) + '&size=' + ${pageSize}}"
+                               class="page-link">
+                                <i class="fa-solid fa-angle-left"></i>
+                            </a>
+                        </li>
+                        <li
+                            th:each="i : ${#numbers.sequence(currentPage - 2 < 0 ? 0 : currentPage - 2,
+                                                                    currentPage + 2 >= totalPages ? totalPages - 1 : currentPage + 2)}"
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a th:href="@{'/customer/display?page=' + ${i} + '&size=' + ${pageSize}}"
+                               th:text="${i + 1}" class="page-link"></a>
+                        </li>
+
+                        <li th:classappend="${currentPage + 1 == totalPages} ? 'disabled'">
+                            <a th:href="@{'/customer/display?page=' + (${currentPage + 1}) + '&size=' + ${pageSize}}"
+                               class="page-link">
+                                <i class="fa-solid fa-angle-right"></i> <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footerBar}"></div>
+
+<script type="text/javascript" th:src="@{/js/script.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
